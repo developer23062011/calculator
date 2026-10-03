@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#070a14">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Calculator">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Sora:wght@200;300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="bg" aria-hidden="true"><i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i></div>
+
+  <!-- ============================ CALCULATOR (public face) ============================ -->
+  <main id="calc" class="calc-wrap">
+    <section class="calc glass" aria-label="Calculator">
+      <div class="screen">
+        <div id="expr" class="expr" aria-hidden="true"></div>
+        <div id="out" class="out" role="status" aria-live="polite">0</div>
+      </div>
+      <div class="keys" id="keys">
+        <button class="k fn"  data-k="AC"  tabindex="-1" aria-label="All clear">AC</button>
+        <button class="k fn"  data-k="BS"  tabindex="-1" aria-label="Backspace">⌫</button>
+        <button class="k fn"  data-k="%"   tabindex="-1" aria-label="Percent">%</button>
+        <button class="k op"  data-k="÷"   tabindex="-1" aria-label="Divide">÷</button>
+
+        <button class="k" data-k="7" tabindex="-1">7</button>
+        <button class="k" data-k="8" tabindex="-1">8</button>
+        <button class="k" data-k="9" tabindex="-1">9</button>
+        <button class="k op" data-k="×" tabindex="-1" aria-label="Multiply">×</button>
+
+        <button class="k" data-k="4" tabindex="-1">4</button>
+        <button class="k" data-k="5" tabindex="-1">5</button>
+        <button class="k" data-k="6" tabindex="-1">6</button>
+        <button class="k op" data-k="−" tabindex="-1" aria-label="Subtract">−</button>
+
+        <button class="k" data-k="1" tabindex="-1">1</button>
+        <button class="k" data-k="2" tabindex="-1">2</button>
+        <button class="k" data-k="3" tabindex="-1">3</button>
+        <button class="k op" data-k="+" tabindex="-1" aria-label="Add">+</button>
+
+        <button class="k fn" data-k="±" tabindex="-1" aria-label="Toggle sign">±</button>
+        <button class="k" data-k="0" tabindex="-1">0</button>
+        <button class="k" data-k="." tabindex="-1" aria-label="Decimal point">.</button>
+        <button class="k eq" id="eq" tabindex="-1" aria-label="Equals">=</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============================ PRIVATE LAYER (hidden) ============================ -->
+  <div id="vault" class="vault" hidden></div>
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="calc.js"></script>
+  <script src="vault.js"></script>
+</body>
+</html>
