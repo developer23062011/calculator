@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Calculator</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#0b0d10;--panel:#12151a;--panel2:#181c22;--text:#f4f6f8;--muted:#8e96a3;--line:#272c34;--accent:#fff;--danger:#ff6b6b}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at top,#1b2029 0,#0b0d10 45%);color:var(--text);min-height:100vh}
+button,input,select{font:inherit}
+button{transition:.18s ease}
+button:active{transform:scale(.98)}
+.wrap{width:min(1180px,100%);margin:auto;min-height:100vh;padding:24px}
+.card{background:rgba(18,21,26,.88);border:1px solid var(--line);border-radius:24px;box-shadow:0 25px 80px #0008;backdrop-filter:blur(18px)}
+header{display:flex;align-items:center;gap:13px;margin:0 auto 18px;max-width:480px}
+.brand{width:48px;height:48px;border-radius:15px;background:#f4f6f8;color:#101216;display:grid;place-items:center;font-weight:900;user-select:none;touch-action:none;box-shadow:0 10px 30px #0008;cursor:pointer}
+.title{font-weight:850;font-size:17px}.muted{color:var(--muted);font-size:13px}
+.calc{padding:16px;max-width:480px;margin:auto}.display{height:120px;background:#080a0d;color:#fff;border:1px solid #20252c;border-radius:19px;padding:20px;display:flex;align-items:end;justify-content:flex-end;overflow:hidden;font-size:42px;word-break:break-all}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}.keys button{height:64px;border:1px solid #252a32;border-radius:17px;background:#1a1e24;color:#f7f8fa;font-size:20px;cursor:pointer}.keys button:hover{background:#222730}.keys .op{background:#20252c}.keys .eq{background:#f4f6f8;color:#101216}.wide{grid-column:span 2}
+footer{text-align:center;color:#69717e;font-size:12px;margin:18px}
+.screen{padding:28px;max-width:680px;margin:auto}.hidden{display:none!important}
+h2{margin:0 0 6px;font-size:26px}h3{font-size:15px;margin:24px 0 10px}
+.field{margin:14px 0}.field label{display:block;font-size:12px;font-weight:800;color:#aab1bc;margin-bottom:7px;text-transform:uppercase;letter-spacing:.06em}.field input,.field select{width:100%;padding:14px 15px;background:#0d1014;color:#fff;border:1px solid #2b3038;border-radius:13px;outline:none}.field input:focus{border-color:#707987}
+.primary,.secondary,.danger{border:1px solid transparent;border-radius:13px;padding:12px 15px;cursor:pointer;font-weight:750}.primary{background:#f4f6f8;color:#0b0d10}.secondary{background:#1b2027;color:#e9ecf0;border-color:#2a3038}.danger{background:#32181a;color:#ffb0b0;border-color:#552326}.actions{display:flex;gap:8px;flex-wrap:wrap}
+.notice{padding:14px;border-radius:14px;background:#171b21;border:1px solid #272d36;color:#b7bec9;font-size:13px;margin:14px 0}.error{color:#ff9292;font-size:13px;margin-top:8px;min-height:18px}
+.vault-shell{max-width:1120px;margin:auto}.vaulthead{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:8px}
+.cats{display:flex;gap:8px;overflow:auto;margin:18px 0}.cat{white-space:nowrap;border:1px solid #2a3038;border-radius:999px;padding:9px 14px;background:#15191f;color:#adb5c0;cursor:pointer}.cat.active{background:#f4f6f8;color:#0b0d10;border-color:#f4f6f8}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}.item{background:#15191f;border:1px solid #272d35;border-radius:17px;overflow:hidden;position:relative}.item img{width:100%;aspect-ratio:1;object-fit:cover;display:block;cursor:pointer}.item .meta{padding:10px;font-size:12px;color:#b5bdc8}.item .meta button{margin-top:7px;width:100%}
+.empty{padding:48px 20px;text-align:center;color:#777;border:1px dashed #343a43;border-radius:16px;grid-column:1/-1}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}.stat{padding:17px;border:1px solid #292f38;background:#15191f;border-radius:17px}.stat b{font-size:24px;display:block}.stat span{color:#8d96a2;font-size:12px}
+.admin-grid{display:grid;grid-template-columns:230px 1fr;gap:16px;max-width:1100px;margin:auto}.side{padding:14px;align-self:start}.side button{width:100%;text-align:left;margin:4px 0}.mainpanel{padding:24px}
+.hero{padding:26px;border:1px solid #292f38;border-radius:20px;background:linear-gradient(135deg,#1a1f27,#111419)}
+.hero h2{font-size:30px}.pill{display:inline-block;margin-top:8px;padding:6px 9px;border-radius:99px;background:#232932;color:#aeb6c2;font-size:11px}
+.drop{border:1px dashed #3a414b;border-radius:17px;padding:24px;text-align:center;margin-top:15px;color:#929ba8;background:#101318}
+.modal{position:fixed;inset:0;background:#000d;z-index:20;display:flex;align-items:center;justify-content:center;padding:20px}.modalbox{max-width:1000px;width:100%;height:min(88vh,850px);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}.modalbox img{max-width:100%;max-height:76vh;object-fit:contain;border-radius:15px}.modalbar{position:absolute;top:0;right:0;display:flex;gap:7px}.modalnav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:1px solid #555;background:#161a20;color:white;cursor:pointer}.prev{left:0}.next{right:0}.close{right:0;top:54px}
+.progress{font-size:12px;color:#818a97;margin-top:8px}
+small{color:#777}
+@media(max-width:850px){.grid{grid-template-columns:repeat(3,1fr)}.admin-grid{grid-template-columns:1fr}.side{display:flex;overflow:auto;gap:6px}.side button{width:auto;white-space:nowrap}.wrap{padding:14px}}
+@media(max-width:560px){.grid{grid-template-columns:repeat(2,1fr)}.screen{padding:21px}.display{height:100px;font-size:34px}.keys button{height:57px}.stats{grid-template-columns:1fr 1fr}.stats .stat:last-child{grid-column:span 2}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section id="calculator">
+<header>
+  <div id="secretBrand" class="brand" title="">=</div>
+  <div><div class="title">Calculator</div><div class="muted">Everyday calculator</div></div>
+</header>
+<div class="card calc">
+  <div id="display" class="display">0</div>
+  <div class="keys">
+    <button data-k="C">C</button><button data-k="(">(</button><button data-k=")">)</button><button data-k="/">÷</button>
+    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="*">×</button>
+    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="-">−</button>
+    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="+">+</button>
+    <button data-k="%">%</button><button data-k="0">0</button><button data-k=".">.</button><button class="eq" data-k="=">=</button>
+    <button class="wide" data-k="back">⌫ Back</button><button data-k="ans">ANS</button>
+  </div>
+</div>
+<footer>Calculator • Help • About</footer>
+</section>
+
+<section id="login" class="card screen hidden">
+  <h2>Sign in</h2><div class="muted">Enter your account credentials.</div>
+  <div class="field"><label>Username</label><input id="username" autocomplete="username"></div>
+  <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password"></div>
+  <div id="loginErr" class="error"></div>
+  <button class="primary" id="loginBtn">Continue</button>
+  <button class="secondary" id="backCalc" style="margin-left:6px">Back</button>
+  <div class="notice">For this personal version, credentials are kept on this browser only. The password is never stored directly.</div>
+</section>
+
+<section id="setup" class="card screen hidden">
+  <h2>Create admin account</h2>
+  <div class="muted">The first account is the master administrator for this personal vault.</div>
+  <div class="field"><label>Username</label><input id="newUser" autocomplete="username"></div>
+  <div class="field"><label>Login password</label><input id="newPass" type="password"></div>
+  <div class="field"><label>Vault PIN / passphrase</label><input id="newPin" type="password"></div>
+  <div class="field"><label>Confirm vault PIN / passphrase</label><input id="newPin2" type="password"></div>
+  <div id="setupErr" class="error"></div>
+  <button class="primary" id="setupBtn">Create vault</button>
+</section>
+
+<section id="second" class="card screen hidden">
+  <h2>Vault verification</h2>
+  <div class="muted">A second secret is required before the vault can be opened.</div>
+  <div class="field"><label>Vault PIN / passphrase</label><input id="pin" type="password" autocomplete="off"></div>
+  <div id="pinErr" class="error"></div>
+  <button class="primary" id="pinBtn">Unlock vault</button>
+</section>
+
+<section id="decoy" class="card screen hidden">
+  <h2>Calculator help</h2>
+  <div class="notice">Nothing to see here. Use the calculator normally.</div>
+  <p class="muted">Basic operations, percentages, parentheses and keyboard input are supported.</p>
+  <button class="secondary" id="decoyBack">Return</button>
+</section>
+
+
+<section id="admin" class="admin-grid hidden">
+  <aside class="card side">
+    <div style="font-weight:850;padding:8px 10px 12px">Private Vault</div>
+    <button class="secondary" id="adminHome">Dashboard</button>
+    <button class="secondary" id="adminVaultBtn2">Gallery</button>
+    <button class="secondary" id="adminBackupBtn2">Backup</button>
+    <button class="danger" id="adminLock">Lock</button>
+  </aside>
+  <main class="card mainpanel">
+  <div class="hero">
+    <div class="muted">MASTER CONTROL</div>
+    <h2>Admin Dashboard</h2>
+    <div class="muted">Manage your personal vault and secondary user.</div>
+    <span class="pill">Admin session</span>
+  </div>
+
+  <div class="notice">
+    <b>Admin only.</b> This area manages the secondary user account and vault settings.
+  </div>
+
+  <h3>Secondary user</h3>
+  <div id="userStatus" class="notice"></div>
+  <div class="field"><label>Username</label><input id="userNewName" autocomplete="off"></div>
+  <div class="field"><label>Password</label><input id="userNewPass" type="password" autocomplete="new-password"></div>
+  <div id="userErr" class="error"></div>
+  <div class="actions">
+    <button class="primary" id="createUserBtn">Create / replace user</button>
+    <button class="danger" id="removeUserBtn">Remove user</button>
+  </div>
+
+  <h3 style="margin-top:25px">Vault</h3>
+  <div class="actions">
+    <button class="secondary" id="adminVaultBtn">Open vault</button>
+    <button class="secondary" id="adminBackupBtn">Encrypted backup</button>
+    <button class="secondary" id="adminChangeBtn">Change admin password</button>
+  </div>
+
+  <div class="notice" style="margin-top:20px">
+    The admin account is the only account that can reach this dashboard. The secondary user has no admin controls.
+  </div>
+  </main>
+</section>
+
+<section id="vault" class="card screen hidden">
+  <div class="vaulthead"><div><h2 style="margin:0">Private Vault</h2><div class="muted">Encrypted on this device</div></div><button class="secondary" id="lockBtn">Lock</button></div>
+  
+<div class="stats" id="vaultStats">
+  <div class="stat"><b id="statPhotos">0</b><span>Images</span></div>
+  <div class="stat"><b id="statCats">0</b><span>Categories</span></div>
+  <div class="stat"><b id="statSize">0 MB</b><span>Encrypted storage</span></div>
+</div>
+<div class="field" style="margin:12px 0"><input id="gallerySearch" placeholder="Search this category…"></div>
+<div class="cats" id="cats"></div>
+
+  <div class="actions">
+    <button class="secondary" id="vaultAdminBtn">Admin</button>
+    <button class="primary" id="uploadBtn">+ Add files</button>
+    <button class="secondary" id="newCatBtn">New category</button>
+    <button class="secondary" id="backupBtn">Encrypted backup</button>
+    <button class="secondary" id="restoreBtn">Restore backup</button>
+    <input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden>
+    <input id="restoreInput" type="file" accept=".vaultbackup,application/json" hidden>
+  </div>
+  <div id="dropZone" class="drop">Drop images here or use <b>Add files</b> to encrypt them locally.</div><div id="progress" class="progress"></div>
+  <div id="items" style="margin-top:14px"></div>
+  <div class="notice"><b>Privacy:</b> files are encrypted in the browser before being placed in IndexedDB. The vault key is kept only in memory while unlocked.</div>
+</section>
+</div>
+
+<script>
+"use strict";
+
+/* ---------- Small helpers ---------- */
+const $ = id => document.getElementById(id);
+const enc = new TextEncoder(), dec = new TextDecoder();
+const DB="private-calculator-vault-v1", STORE="files";
+let state={expr:"",ans:"0"};
+let sessionKey=null, currentCategory="Photos", categories=["Photos","Private","Favorites","Locked"];
+
+function b64(bytes){let s=""; bytes.forEach(b=>s+=String.fromCharCode(b));return btoa(s)}
+function unb64(s){let x=atob(s),a=new Uint8Array(x.length);for(let i=0;i<x.length;i++)a[i]=x.charCodeAt(i);return a}
+function rand(n){let a=new Uint8Array(n);crypto.getRandomValues(a);return a}
+async function sha256(s){return crypto.subtle.digest("SHA-256",enc.encode(s))}
+async function verifier(user,pw){return b64(new Uint8Array(await sha256(user+"|"+pw)))}
+async function derive(pass,salt){return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:600000,hash:"SHA-256"},await crypto.subtle.importKey("raw",enc.encode(pass),"PBKDF2",false,["deriveKey"]),{name:"AES-GCM",length:256},false,["encrypt","decrypt"])}
+function show(id){["calculator","login","setup","second","decoy","vault"].forEach(x=>$(x).classList.toggle("hidden",x!==id))}
+function localGet(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}}
+function localSet(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function openDB(){return new Promise((res,rej)=>{let r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE,{keyPath:"id"});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function dbPut(v){let db=await openDB();return new Promise((res,rej)=>{let t=db.transaction(STORE,"readwrite");t.objectStore(STORE).put(v);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
+async function dbAll(){let db=await openDB();return new Promise((res,rej)=>{let t=db.transaction(STORE,"readonly"),r=t.objectStore(STORE).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function dbDelete(id){let db=await openDB();return new Promise((res,rej)=>{let t=db.transaction(STORE,"readwrite");t.objectStore(STORE).delete(id);t.oncomplete=res;t.onerror=()=>rej(t.error)})}
+
+async function encryptBytes(bytes,key){
+  const iv=rand(12), ct=new Uint8Array(await crypto.subtle.encrypt({name:"AES-GCM",iv},key,bytes));
+  return {iv:b64(iv),data:b64(ct)};
+}
+async function decryptBytes(obj,key){
+  return new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(obj.iv)},key,unb64(obj.data)));
+}
+
+/* ---------- Calculator ---------- */
+function evalExpr(s){
+  s=s.replace(/×/g,"*").replace(/÷/g,"/");
+  let i=0;
+  function skip(){while(/\s/.test(s[i]||""))i++}
+  function number(){skip();let st=i;if(s[i]==="-")i++;while(/[0-9.]/.test(s[i]||""))i++;if(st===i)throw 0;return Number(s.slice(st,i))}
+  function factor(){skip();if(s[i]==="("){i++;let v=add();skip();if(s[i++]!==")")throw 0;return v}return number()}
+  function term(){let v=factor();for(;;){skip();let op=s[i];if(op!=="*"&&op!=="/")break;i++;let b=factor();if(op==="*" )v*=b;else v/=b}return v}
+  function add(){let v=term();for(;;){skip();let op=s[i];if(op!=="+"&&op!=="-")break;i++;let b=term();v=op==="+"?v+b:v-b}return v}
+  let v=add();skip();if(i!==s.length||!Number.isFinite(v))throw 0;return v;
+}
+function calcKey(k){
+ if(k==="C"){state.expr="";$("display").textContent="0";return}
+ if(k==="back"){state.expr=state.expr.slice(0,-1);$("display").textContent=state.expr||"0";return}
+ if(k==="ans"){state.expr+=state.ans;$("display").textContent=state.expr;return}
+ if(k==="="){try{let x=evalExpr(state.expr);state.ans=String(Number(x.toFixed(10)));state.expr=state.ans;$("display").textContent=state.ans}catch{$("display").textContent="Error";setTimeout(()=>{$("display").textContent=state.expr||"0"},700)}return}
+ if(k==="%"){state.expr+="*0.01"}else state.expr+=k;
+ $("display").textContent=state.expr;
+}
+document.querySelectorAll(".keys button").forEach(b=>b.onclick=()=>calcKey(b.dataset.k));
+document.addEventListener("keydown",e=>{
+ if(!document.querySelector("#calculator").classList.contains("hidden")){
+  if(/^[0-9.+\-*/()%]$/.test(e.key))calcKey(e.key);
+  else if(e.key==="Enter")calcKey("="); else if(e.key==="Backspace")calcKey("back"); else if(e.key==="Escape")calcKey("C");
+ }
+});
+
+/* ---------- Hidden gesture: deliberate hold, then tap ---------- */
+let holdTimer=null, armedUntil=0;
+const brand=$("secretBrand");
+brand.addEventListener("pointerdown",e=>{
+ e.preventDefault(); clearTimeout(holdTimer);
+ holdTimer=setTimeout(()=>{armedUntil=Date.now()+5000;brand.textContent="✓";setTimeout(()=>brand.textContent="=",1200)},2500);
+});
+["pointerup","pointercancel","pointerleave"].forEach(ev=>brand.addEventListener(ev,()=>clearTimeout(holdTimer)));
+brand.addEventListener("click",e=>{
+ if(Date.now()<armedUntil){armedUntil=0;const cfg=localGet("vaultConfig");show(cfg?"login":"setup")}
+});
+
+/* ---------- Login/setup + roles ---------- */
+$("backCalc").onclick=()=>show("calculator");
+
+function getConfig(){return localGet("vaultConfig")}
+function saveConfig(c){localSet("vaultConfig",c)}
+
+function refreshUserStatus(){
+ const c=getConfig(), u=c?.user;
+ $("userStatus").textContent=u
+   ? `Secondary user: ${u.username} — enabled`
+   : "No secondary user exists yet.";
+}
+
+$("setupBtn").onclick=async()=>{
+ const u=$("newUser").value.trim(),p=$("newPass").value,pin=$("newPin").value;
+ if(!u||p.length<8||pin.length<8){$("setupErr").textContent="Use a username and secrets of at least 8 characters.";return}
+ if(pin!==$("newPin2").value){$("setupErr").textContent="Vault secrets do not match.";return}
+ const salt=b64(rand(16)), pinSalt=b64(rand(16));
+ saveConfig({
+   admin:{username:u,loginVerifier:await verifier(u,p)},
+   salt,pinSalt,categories,
+   user:null
+ });
+ localSet("vaultMarker",null);
+ $("setupErr").textContent="";
+ $("newPass").value=$("newPin").value=$("newPin2").value="";
+ show("login");
+};
+
+$("loginBtn").onclick=async()=>{
+ const c=getConfig(),u=$("username").value.trim(),p=$("password").value;
+ if(!c){show("setup");return}
+
+ if(c.admin && u===c.admin.username && await verifier(u,p)===c.admin.loginVerifier){
+   $("password").value="";
+   sessionStorage.setItem("role","admin");
+   refreshUserStatus();
+   show("admin");
+   return;
+ }
+
+ if(c.user && c.user.enabled && u===c.user.username && await verifier(u,p)===c.user.loginVerifier){
+   $("password").value="";
+   sessionStorage.setItem("role","user");
+   show("second");
+   return;
+ }
+
+ $("password").value="";
+ show("decoy");
+};
+
+$("createUserBtn").onclick=async()=>{
+ const c=getConfig(),u=$("userNewName").value.trim(),pw=$("userNewPass").value;
+ if(!c?.admin){show("calculator");return}
+ if(!u||pw.length<8){$("userErr").textContent="Use a username and password of at least 8 characters.";return}
+ if(u===c.admin.username){$("userErr").textContent="The secondary username must be different from admin.";return}
+ c.user={username:u,loginVerifier:await verifier(u,pw),enabled:true};
+ saveConfig(c);
+ $("userNewPass").value="";
+ $("userErr").textContent="";
+ refreshUserStatus();
+};
+
+$("removeUserBtn").onclick=()=>{
+ const c=getConfig(); if(!c?.user)return;
+ if(confirm("Remove the secondary user account?")){c.user=null;saveConfig(c);refreshUserStatus();}
+};
+
+$("adminLock").onclick=()=>{sessionStorage.clear();sessionKey=null;show("calculator")};
+
+$("adminVaultBtn").onclick=()=>show("second");
+$("adminVaultBtn2").onclick=()=>show("second");
+$("adminBackupBtn2").onclick=()=>$("adminBackupBtn").click();
+$("adminHome").onclick=()=>{refreshUserStatus();show("admin")};
+
+$("adminChangeBtn").onclick=async()=>{
+ const c=getConfig(),pw=prompt("Enter a new admin password (8+ characters):");
+ if(!pw||pw.length<8)return alert("Password must be at least 8 characters.");
+ c.admin.loginVerifier=await verifier(c.admin.username,pw);
+ saveConfig(c);alert("Admin password changed.");
+};
+
+$("adminBackupBtn").onclick=async()=>{
+ if(!sessionKey){
+   const pin=prompt("Enter the vault PIN/passphrase to temporarily unlock backup access:");
+   if(!pin)return;
+   try{sessionKey=await derive(pin,unb64(getConfig().pinSalt));}
+   catch{return alert("Could not unlock vault.")}
+ }
+ await exportEncryptedBackup();
+};
+
+/* ---------- Vault ---------- */
+async function unlock(){
+ const c=localGet("vaultConfig"),pin=$("pin").value;
+ try{
+  sessionKey=await derive(pin,unb64(c.pinSalt));
+  // Authenticate the key by attempting to decrypt a small verifier record.
+  const marker=localGet("vaultMarker");
+  if(marker) await decryptBytes(marker,sessionKey);
+  else localSet("vaultMarker",await encryptBytes(enc.encode("vault-ok"),sessionKey));
+  categories=c.categories||categories;
+  currentCategory=categories[0]||"Photos";
+  $("pin").value="";renderCats();await renderItems();show("vault");
+ }catch{sessionKey=null;$("pin").value="";$("pinErr").textContent="Verification failed.";setTimeout(()=>show("decoy"),500)}
+}
+$("pinBtn").onclick=unlock;
+
+function renderCats(){
+ $("cats").innerHTML="";
+ categories.forEach(c=>{
+  let b=document.createElement("button");b.className="cat"+(c===currentCategory?" active":"");b.textContent=c;
+  b.onclick=async()=>{currentCategory=c;renderCats();await renderItems()};$("cats").appendChild(b)
+ })
+}
+let viewerItems=[];
+async function updateStats(){
+ const all=await dbAll();
+ $("statPhotos").textContent=all.length;
+ $("statCats").textContent=categories.length;
+ $("statSize").textContent=(all.reduce((n,x)=>n+(x.size||0),0)/1048576).toFixed(1)+" MB";
+}
+async function renderItems(){
+ const all=await dbAll();
+ const q=($("gallerySearch")?.value||"").toLowerCase();
+ const mine=all.filter(x=>x.category===currentCategory && (!q||x.name.toLowerCase().includes(q)));
+ viewerItems=mine;
+ const box=$("items");box.innerHTML="";
+ if(!mine.length){box.innerHTML='<div class="empty">No encrypted images in this category.</div>';updateStats();return}
+ const grid=document.createElement("div");grid.className="grid";
+ for(const [idx,item] of mine.entries()){
+  const card=document.createElement("div");card.className="item";
+  const img=document.createElement("img");img.alt=item.name;
+  img.onclick=()=>openViewer(idx);
+  try{
+   const bytes=await decryptBytes(item.payload,sessionKey);
+   const blob=new Blob([bytes],{type:item.type});img.src=URL.createObjectURL(blob);
+  }catch{img.alt="Unable to decrypt"}
+  const meta=document.createElement("div");meta.className="meta";
+  meta.textContent=item.name;
+  const del=document.createElement("button");del.className="danger";del.textContent="Delete";
+  del.onclick=async()=>{if(confirm("Delete this encrypted file?")){await dbDelete(item.id);renderItems()}};
+  meta.appendChild(del);card.appendChild(img);card.appendChild(meta);grid.appendChild(card)
+ }
+ box.appendChild(grid);updateStats();
+}
+$("uploadBtn").onclick=()=>$("fileInput").click();
+$("fileInput").onchange=async e=>{
+ if(!sessionKey)return;
+ const files=[...e.target.files];$("progress").textContent="Encrypting locally…";
+ for(const f of files){
+  if(!["image/jpeg","image/png","image/webp"].includes(f.type)||f.size>20*1024*1024)continue;
+  const bytes=new Uint8Array(await f.arrayBuffer()),payload=await encryptBytes(bytes,sessionKey);
+  await dbPut({id:crypto.randomUUID(),name:f.name,type:f.type,size:f.size,category:currentCategory,payload,created:Date.now()});
+ }
+ e.target.value="";$("progress").textContent="";await renderItems();
+};
+$("newCatBtn").onclick=async()=>{
+ const n=prompt("Category name?");if(!n)return;
+ const name=n.trim().slice(0,30);if(!name||categories.includes(name))return;
+ categories.push(name);let c=localGet("vaultConfig");c.categories=categories;localSet("vaultConfig",c);renderCats();
+};
+$("lockBtn").onclick=()=>{sessionKey=null;sessionStorage.removeItem("loginOK");show("calculator")};
+
+/* ---------- Encrypted backup / restore ---------- */
+async function exportEncryptedBackup(){
+ if(!sessionKey)return;
+ const all=await dbAll();
+ const pack={version:1,created:new Date().toISOString(),files:all,categories};
+ const raw=enc.encode(JSON.stringify(pack)), encrypted=await encryptBytes(raw,sessionKey);
+ const blob=new Blob([JSON.stringify(encrypted)],{type:"application/octet-stream"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="private-vault-backup.vaultbackup";a.click();
+}
+$("backupBtn").onclick=exportEncryptedBackup;
+$("vaultAdminBtn").onclick=()=>{
+ if(sessionStorage.getItem("role")==="admin"){refreshUserStatus();show("admin")}
+ else alert("Admin access required.");
+};
+$("restoreBtn").onclick=()=>$("restoreInput").click();
+$("restoreInput").onchange=async e=>{
+ const f=e.target.files[0];if(!f||!sessionKey)return;
+ try{
+  const obj=JSON.parse(await f.text()), raw=await decryptBytes(obj,sessionKey),pack=JSON.parse(dec.decode(raw));
+  for(const item of pack.files)await dbPut(item);
+  categories=pack.categories||categories;let c=localGet("vaultConfig");c.categories=categories;localSet("vaultConfig",c);
+  renderCats();await renderItems();alert("Encrypted backup restored.");
+ }catch{alert("Backup could not be decrypted with this vault secret.")}
+ e.target.value="";
+};
+
+
+$("gallerySearch").addEventListener("input",renderItems);
+
+async function openViewer(index){
+ const item=viewerItems[index]; if(!item||!sessionKey)return;
+ $("viewer").classList.remove("hidden");
+ $("viewerName").textContent=item.name;
+ try{
+  const bytes=await decryptBytes(item.payload,sessionKey);
+  const blob=new Blob([bytes],{type:item.type});
+  $("viewerImg").src=URL.createObjectURL(blob);
+ }catch{$("viewerName").textContent="Unable to decrypt image";}
+ window.viewerIndex=index;
+}
+$("viewerClose").onclick=()=>$("viewer").classList.add("hidden");
+$("viewerPrev").onclick=()=>{if(viewerItems.length)openViewer((window.viewerIndex-1+viewerItems.length)%viewerItems.length)};
+$("viewerNext").onclick=()=>{if(viewerItems.length)openViewer((window.viewerIndex+1)%viewerItems.length)};
+document.addEventListener("keydown",e=>{
+ if($("viewer").classList.contains("hidden"))return;
+ if(e.key==="Escape")$("viewer").classList.add("hidden");
+ if(e.key==="ArrowLeft")$("viewerPrev").click();
+ if(e.key==="ArrowRight")$("viewerNext").click();
+});
+
+
+const dropZone=$("dropZone");
+["dragenter","dragover"].forEach(ev=>dropZone.addEventListener(ev,e=>{e.preventDefault();dropZone.style.borderColor="#fff"}));
+["dragleave","drop"].forEach(ev=>dropZone.addEventListener(ev,e=>{e.preventDefault();dropZone.style.borderColor=""}));
+dropZone.addEventListener("drop",async e=>{
+ const dt=e.dataTransfer;if(!dt?.files?.length)return;
+ const input=$("fileInput");
+ const files=[...dt.files].filter(f=>["image/jpeg","image/png","image/webp"].includes(f.type));
+ $("progress").textContent="Encrypting locally…";
+ for(const f of files){
+  if(f.size>20*1024*1024)continue;
+  const payload=await encryptBytes(new Uint8Array(await f.arrayBuffer()),sessionKey);
+  await dbPut({id:crypto.randomUUID(),name:f.name,type:f.type,size:f.size,category:currentCategory,payload,created:Date.now()});
+ }
+ $("progress").textContent="";await renderItems();
+});
+
+/* inactivity lock */
+let inactivity;
+function resetIdle(){clearTimeout(inactivity);if(sessionKey)inactivity=setTimeout(()=>{sessionKey=null;sessionStorage.clear();show("calculator")},5*60*1000)}
+["pointermove","keydown","click","touchstart"].forEach(e=>document.addEventListener(e,resetIdle));
+
+/* If the page is reopened, never automatically unlock. */
+show("calculator");
+</script>
+
+<div id="viewer" class="modal hidden">
+  <div class="modalbox">
+    <div class="modalbar">
+      <button class="secondary" id="viewerClose">Close</button>
+    </div>
+    <button class="modalnav prev" id="viewerPrev">‹</button>
+    <img id="viewerImg" alt="">
+    <button class="modalnav next" id="viewerNext">›</button>
+    <div id="viewerName" class="muted" style="margin-top:10px"></div>
+  </div>
+</div>
+</body>
+</html>
