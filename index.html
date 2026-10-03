@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pocket Calculator</title>
+<style>
+:root{
+  --bg:#090b0f;--panel:#11151b;--panel2:#171c23;--line:#2a313b;
+  --text:#f5f7fa;--muted:#9aa4b2;--accent:#f2f4f7;--danger:#ff6b6b;
+  --shadow:0 24px 70px rgba(0,0,0,.42);--radius:24px
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% -10%,#202630 0,#0b0e12 45%,#07090c 100%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;min-height:100vh}
+button,input{font:inherit}
+button{cursor:pointer}
+.app{width:min(1180px,calc(100% - 28px));margin:28px auto 60px}
+.brand{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.brand h1{font-size:18px;margin:0;font-weight:800;letter-spacing:-.02em}
+.brand .secret{font-size:28px;font-weight:900;border:0;background:transparent;color:#dfe4ea;padding:8px 12px;border-radius:14px;user-select:none;touch-action:none}
+.brand .secret:active{background:#1a2028}
+.screen{display:block}
+.hidden{display:none!important}
+.card{background:rgba(17,21,27,.92);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px}
+.calculator{width:min(560px,100%);margin:50px auto}
+.display{background:#0a0d11;border:1px solid var(--line);border-radius:20px;padding:20px;text-align:right;margin-bottom:14px;min-height:108px;display:flex;flex-direction:column;justify-content:flex-end}
+.expr{font-size:16px;color:var(--muted);min-height:24px;overflow:hidden}
+.result{font-size:42px;font-weight:800;letter-spacing:-.04em;overflow:auto;white-space:nowrap}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.keys button{border:1px solid var(--line);background:#171c23;color:var(--text);border-radius:16px;min-height:62px;font-weight:800;font-size:18px}
+.keys button:hover{background:#20262f}.keys .eq{background:#f2f4f7;color:#0b0d10;border-color:#fff}
+.keys .wide{grid-column:span 2}
+.muted{color:var(--muted);line-height:1.5}
+h2{margin:0 0 8px;font-size:30px;letter-spacing:-.03em}
+h3{margin:0 0 8px}
+.field{margin:18px 0}.field label{display:block;text-transform:uppercase;font-size:12px;font-weight:900;letter-spacing:.08em;color:#aab3bf;margin-bottom:8px}
+input,select{width:100%;background:#0c1015;color:var(--text);border:1px solid var(--line);border-radius:14px;padding:14px 15px;outline:none}
+input:focus,select:focus{border-color:#657080;box-shadow:0 0 0 3px rgba(130,145,165,.12)}
+button.primary,button.secondary,button.danger,button.ghost{border:1px solid var(--line);border-radius:14px;padding:13px 18px;font-weight:850}
+button.primary{background:#f2f4f7;color:#0b0d10;border-color:#fff}
+button.secondary{background:#1b2129;color:#f3f5f7}
+button.ghost{background:transparent;color:#dbe0e7}
+button.danger{background:#2b171a;color:#ffb5b5;border-color:#5b2b31}
+button:disabled{opacity:.45;cursor:not-allowed}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.error{color:#ff8d8d;min-height:20px;margin-top:10px;font-size:14px}
+.notice{background:#181d24;border:1px solid var(--line);border-radius:14px;padding:13px;color:#aeb7c3;margin-top:18px;font-size:13px}
+.auth{max-width:680px;margin:80px auto}
+.admin-layout{display:grid;grid-template-columns:230px 1fr;gap:16px}
+.sidebar{padding:18px;background:#0e1217;border:1px solid var(--line);border-radius:20px}
+.sidebar button{width:100%;text-align:left;margin-bottom:8px}
+.admin-main{min-width:0}
+.panel{background:#11151b;border:1px solid var(--line);border-radius:20px;padding:22px;margin-bottom:16px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat{background:#0c1015;border:1px solid var(--line);border-radius:16px;padding:18px}
+.stat b{display:block;font-size:26px}.stat span{color:var(--muted);font-size:13px}
+.vault-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.vault-tools{display:flex;gap:9px;flex-wrap:wrap}
+.tabs{display:flex;gap:8px;overflow:auto;padding:3px 0 15px}
+.tab{white-space:nowrap}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.tile{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:18px;background:#0d1116;min-height:180px}
+.tile img{width:100%;height:180px;display:block;object-fit:cover}
+.tile .meta{padding:10px 12px}.tile .name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tile .small{color:var(--muted);font-size:12px;margin-top:3px}
+.tile .tile-actions{display:flex;gap:7px;padding:0 12px 12px}.tile .tile-actions button{padding:8px 10px;font-size:12px}
+.drop{border:1px dashed #495260;border-radius:18px;padding:22px;text-align:center;color:var(--muted);margin-bottom:16px}
+.drop.drag{border-color:#dce2e8;background:#151a20;color:#fff}
+.empty{padding:45px 20px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:18px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:20;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal img{max-width:94vw;max-height:82vh;object-fit:contain;border-radius:12px}
+.viewer-controls{position:fixed;inset:auto 0 24px;display:flex;justify-content:center;gap:10px}
+.modal-close{position:fixed;right:22px;top:18px}
+footer{text-align:center;color:#6f7885;font-size:12px;margin-top:22px}
+@media(max-width:760px){.admin-layout{grid-template-columns:1fr}.stats{grid-template-columns:1fr}.calculator{margin:20px auto}.card{padding:20px}.gallery{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="brand">
+    <h1>Pocket Calculator</h1>
+    <button id="secretBrand" class="secret" aria-label="Calculator logo">=</button>
+  </div>
+
+  <section id="calculator" class="screen">
+    <div class="card calculator">
+      <div class="display">
+        <div id="expr" class="expr"></div>
+        <div id="result" class="result">0</div>
+      </div>
+      <div class="keys">
+        <button data-k="C">C</button><button data-k="(">(</button><button data-k=")">)</button><button data-k="back">⌫</button>
+        <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button><button data-k="/">÷</button>
+        <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button><button data-k="*">×</button>
+        <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button><button data-k="-">−</button>
+        <button data-k="%">%</button><button data-k="0">0</button><button data-k=".">.</button><button data-k="+">+</button>
+        <button class="wide" data-k="ans">ANS</button><button class="eq" data-k="=">=</button>
+      </div>
+    </div>
+    <footer>Calculator • Help • About</footer>
+  </section>
+
+  <section id="login" class="card auth screen hidden">
+    <h2>Sign in</h2>
+    <div class="muted">Enter your account credentials.</div>
+    <div class="field"><label>Username</label><input id="username" autocomplete="username"></div>
+    <div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password"></div>
+    <div id="loginErr" class="error"></div>
+    <div class="actions"><button id="loginBtn" class="primary">Continue</button><button id="backCalc" class="secondary">Back</button></div>
+    <div class="notice">Passwords are never stored directly. This personal edition keeps account metadata in this browser.</div>
+  </section>
+
+  <section id="setup" class="card auth screen hidden">
+    <h2>Create admin account</h2>
+    <div class="muted">This appears only when this browser has no configured Admin account.</div>
+    <div class="field"><label>Admin username</label><input id="newAdminUser" autocomplete="username"></div>
+    <div class="field"><label>Admin password</label><input id="newAdminPass" type="password"></div>
+    <div class="field"><label>Vault PIN / passphrase</label><input id="newVaultPin" type="password"></div>
+    <div class="field"><label>Confirm vault PIN / passphrase</label><input id="newVaultPin2" type="password"></div>
+    <div id="setupErr" class="error"></div>
+    <div class="actions"><button id="setupBtn" class="primary">Create Admin & Vault</button><button id="setupBack" class="secondary">Back</button></div>
+  </section>
+
+  <section id="admin" class="screen hidden">
+    <div class="admin-layout">
+      <aside class="sidebar">
+        <h3>Admin</h3>
+        <div id="adminWho" class="muted" style="margin-bottom:16px"></div>
+        <button id="adminHomeBtn" class="secondary">Dashboard</button>
+        <button id="adminVaultBtn" class="secondary">Open Vault</button>
+        <button id="adminBackupBtn" class="secondary">Encrypted Backup</button>
+        <button id="adminLogoutBtn" class="ghost">Lock / Logout</button>
+      </aside>
+      <main class="admin-main">
+        <div class="panel">
+          <h2>Admin Dashboard</h2>
+          <div class="muted">Manage the secondary user and your local encrypted vault.</div>
+        </div>
+        <div class="panel">
+          <h3>Vault overview</h3>
+          <div class="stats">
+            <div class="stat"><b id="statImages">0</b><span>Encrypted images</span></div>
+            <div class="stat"><b id="statCats">0</b><span>Categories</span></div>
+            <div class="stat"><b id="statSize">0 B</b><span>Encrypted storage</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Secondary user</h3>
+          <div id="userStatus" class="muted"></div>
+          <div class="field"><label>Username</label><input id="newUserName"></div>
+          <div class="field"><label>User password</label><input id="newUserPass" type="password"></div>
+          <div id="userErr" class="error"></div>
+          <div class="actions"><button id="saveUserBtn" class="primary">Create / Replace User</button><button id="removeUserBtn" class="danger">Remove User</button></div>
+        </div>
+        <div class="panel">
+          <h3>Change Admin password</h3>
+          <div class="field"><label>New password</label><input id="newAdminPassword" type="password"></div>
+          <div id="adminPassErr" class="error"></div>
+          <button id="changeAdminPassBtn" class="primary">Change Password</button>
+        </div>
+        <div class="panel">
+          <h3>Restore encrypted backup</h3>
+          <input id="restoreFile" type="file" accept=".json,application/json">
+          <div id="restoreErr" class="error"></div>
+          <button id="restoreBtn" class="secondary" style="margin-top:12px">Restore Backup</button>
+        </div>
+      </main>
+    </div>
+  </section>
+
+  <section id="second" class="card auth screen hidden">
+    <h2>Vault verification</h2>
+    <div class="muted">Enter the vault PIN / passphrase to decrypt your vault.</div>
+    <div class="field"><label>Vault PIN / passphrase</label><input id="vaultPin" type="password" autocomplete="off"></div>
+    <div id="pinErr" class="error"></div>
+    <div class="actions"><button id="unlockBtn" class="primary">Unlock Vault</button><button id="pinBack" class="secondary">Back</button></div>
+  </section>
+
+  <section id="decoy" class="card auth screen hidden">
+    <h2>Calculator help</h2>
+    <div class="muted">Nothing to see here. Try the calculator buttons or keyboard shortcuts.</div>
+    <div class="actions"><button id="decoyBack" class="primary">Back to calculator</button></div>
+  </section>
+
+  <section id="vault" class="screen hidden">
+    <div class="panel">
+      <div class="vault-head">
+        <div><h2>Private Vault</h2><div id="vaultRole" class="muted"></div></div>
+        <div class="vault-tools"><button id="backupBtn" class="secondary">Backup</button><button id="lockBtn" class="danger">Lock</button></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="tabs" id="tabs"></div>
+      <div class="field" style="margin-top:0"><input id="search" placeholder="Search this category..."></div>
+      <div id="drop" class="drop">Drag images here or use the upload button below.<br><br><input id="upload" type="file" accept="image/jpeg,image/png,image/webp" multiple></div>
+      <div id="gallery" class="gallery"></div>
+    </div>
+  </section>
+</div>
+
+<div id="viewer" class="modal hidden">
+  <button id="viewerClose" class="secondary modal-close">Close</button>
+  <img id="viewerImg" alt="Private image">
+  <div class="viewer-controls"><button id="viewerPrev" class="secondary">← Previous</button><button id="viewerNext" class="secondary">Next →</button></div>
+</div>
+
+<script>
+"use strict";
+
+/* ---------- Storage / crypto ---------- */
+const CONFIG_KEY="pocket-calculator-v3-config";
+const DB_NAME="pocket-calculator-v3-vault";
+const STORE="images";
+const MAX_FILE=20*1024*1024;
+const ITER_LOGIN=310000;
+const ITER_VAULT=600000;
+const enc=new TextEncoder(), dec=new TextDecoder();
+
+const $=id=>document.getElementById(id);
+const rand=n=>{const a=new Uint8Array(n);crypto.getRandomValues(a);return a};
+const b64=a=>btoa(String.fromCharCode(...new Uint8Array(a)));
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+
+function localGet(k){try{return JSON.parse(localStorage.getItem(k))}catch{return null}}
+function localSet(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function getConfig(){return localGet(CONFIG_KEY)}
+function saveConfig(c){localSet(CONFIG_KEY,c)}
+
+async function derive(pass,salt,iterations=ITER_VAULT){
+  return crypto.subtle.deriveKey(
+    {name:"PBKDF2",salt,iterations,hash:"SHA-256"},
+    await crypto.subtle.importKey("raw",enc.encode(pass),"PBKDF2",false,["deriveKey"]),
+    {name:"AES-GCM",length:256},false,["encrypt","decrypt"]
+  );
+}
+async function makeVerifier(username,password,salt){
+  const key=await derive(username+"|"+password,salt,ITER_LOGIN);
+  return b64(await crypto.subtle.exportKey("raw",key));
+}
+async function encryptText(text,key){
+  const iv=rand(12),data=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,enc.encode(text));
+  return {iv:b64(iv),data:b64(data)};
+}
+async function decryptText(obj,key){
+  const bytes=await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(obj.iv)},key,unb64(obj.data));
+  return dec.decode(bytes);
+}
+async function encryptBytes(bytes,key){
+  const iv=rand(12),data=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,bytes);
+  return {iv:b64(iv),data:b64(data)};
+}
+async function decryptBytes(obj,key){
+  return new Uint8Array(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(obj.iv)},key,unb64(obj.data)));
+}
+async function verifyVaultPin(pin,cfg){
+  const key=await derive(pin,unb64(cfg.vault.salt),ITER_VAULT);
+  try{
+    const marker=await decryptText(cfg.vault.marker,key);
+    if(marker!=="pocket-calculator-v3-vault-ok") throw new Error("bad marker");
+    return key;
+  }catch{throw new Error("Wrong vault PIN / passphrase")}
+}
+
+/* ---------- Navigation ---------- */
+const SCREENS=["calculator","login","setup","admin","second","decoy","vault"];
+function show(id){
+  SCREENS.forEach(x=>$(x).classList.toggle("hidden",x!==id));
+  window.scrollTo(0,0);
+}
+function hasAdmin(){
+  const c=getConfig();
+  return !!(c?.version===3 && c?.admin?.username && c?.admin?.loginSalt && c?.admin?.loginVerifier && c?.vault?.salt && c?.vault?.marker);
+}
+function enterPrivateArea(){
+  show(hasAdmin()?"login":"setup");
+}
+function lockToCalculator(){
+  sessionStorage.clear();
+  currentKey=null;
+  currentRole=null;
+  clearGalleryUrls();
+  show("calculator");
+}
+
+/* ---------- Calculator ---------- */
+let expression="",answer=0;
+function renderCalc(){
+  $("expr").textContent=expression;
+  $("result").textContent=expression||"0";
+}
+function evalExpr(input){
+  let s=input.replace(/×/g,"*").replace(/÷/g,"/").replace(/%/g,"/100");
+  if(!/^[0-9+\-*/().\s]+$/.test(s)) throw new Error();
+  const v=Function('"use strict";return ('+s+')')();
+  if(!Number.isFinite(v)) throw new Error();
+  return v;
+}
+function calcKey(k){
+  if(k==="C"){expression="";renderCalc();return}
+  if(k==="back"){expression=expression.slice(0,-1);renderCalc();return}
+  if(k==="ans"){expression+=String(answer);renderCalc();return}
+  if(k==="="){
+    try{answer=evalExpr(expression);expression=String(answer)}catch{expression=""}
+    renderCalc();return
+  }
+  expression+=k;renderCalc();
+}
+document.querySelectorAll("[data-k]").forEach(b=>b.addEventListener("click",()=>calcKey(b.dataset.k)));
+document.addEventListener("keydown",e=>{
+  if(["INPUT","TEXTAREA"].includes(document.activeElement?.tagName))return;
+  const k=e.key;
+  if(/[0-9.+\-*/()%]/.test(k))calcKey(k);
+  else if(k==="Enter")calcKey("=");
+  else if(k==="Backspace")calcKey("back");
+  else if(k==="Escape")calcKey("C");
+});
+
+/* ---------- Hidden gesture ---------- */
+let holdTimer=null,armedUntil=0;
+const brand=$("secretBrand");
+brand.addEventListener("pointerdown",e=>{
+  e.preventDefault();
+  clearTimeout(holdTimer);
+  holdTimer=setTimeout(()=>{
+    armedUntil=Date.now()+5000;
+    brand.textContent="✓";
+    setTimeout(()=>brand.textContent="=",1200);
+  },2500);
+});
+["pointerup","pointercancel","pointerleave"].forEach(ev=>brand.addEventListener(ev,()=>clearTimeout(holdTimer)));
+brand.addEventListener("click",e=>{
+  if(Date.now()<armedUntil){armedUntil=0;enterPrivateArea()}
+});
+
+/* ---------- First-run setup ---------- */
+$("setupBtn").onclick=async()=>{
+  const username=$("newAdminUser").value.trim();
+  const password=$("newAdminPass").value;
+  const pin=$("newVaultPin").value;
+  const pin2=$("newVaultPin2").value;
+  $("setupErr").textContent="";
+  if(username.length<3){$("setupErr").textContent="Admin username must be at least 3 characters.";return}
+  if(password.length<8){$("setupErr").textContent="Admin password must be at least 8 characters.";return}
+  if(pin.length<8){$("setupErr").textContent="Vault PIN / passphrase must be at least 8 characters.";return}
+  if(pin!==pin2){$("setupErr").textContent="Vault PINs do not match.";return}
+  $("setupBtn").disabled=true;
+  try{
+    const loginSalt=rand(16),vaultSalt=rand(16);
+    const loginVerifier=await makeVerifier(username,password,loginSalt);
+    const vaultKey=await derive(pin,vaultSalt,ITER_VAULT);
+    const marker=await encryptText("pocket-calculator-v3-vault-ok",vaultKey);
+    const cfg={
+      version:3,
+      admin:{username,loginSalt:b64(loginSalt),loginVerifier},
+      user:null,
+      vault:{salt:b64(vaultSalt),marker},
+      categories:["Photos","Private","Favorites","Locked"]
+    };
+    saveConfig(cfg);
+    sessionStorage.clear();
+    $("newAdminUser").value=$("newAdminPass").value=$("newVaultPin").value=$("newVaultPin2").value="";
+    show("login");
+    $("username").value=username;
+    $("password").focus();
+  }catch(e){
+    $("setupErr").textContent="Could not create the vault. Try again.";
+  }finally{$("setupBtn").disabled=false}
+};
+$("setupBack").onclick=()=>show("calculator");
+
+/* ---------- Login ---------- */
+$("loginBtn").onclick=async()=>{
+  const c=getConfig(),u=$("username").value.trim(),p=$("password").value;
+  $("loginErr").textContent="";
+  if(!hasAdmin()){show("setup");return}
+  try{
+    const adminMatch=u===c.admin.username &&
+      await makeVerifier(u,p,unb64(c.admin.loginSalt))===c.admin.loginVerifier;
+    if(adminMatch){
+      sessionStorage.setItem("role","admin");
+      $("adminWho").textContent="Signed in as "+c.admin.username;
+      await refreshStats();
+      refreshUserStatus();
+      $("password").value="";
+      show("admin");
+      return;
+    }
+    const userMatch=c.user?.enabled && u===c.user.username &&
+      await makeVerifier(u,p,unb64(c.user.loginSalt))===c.user.loginVerifier;
+    if(userMatch){
+      sessionStorage.setItem("role","user");
+      $("password").value="";
+      $("vaultRole").textContent="Signed in as "+c.user.username;
+      $("vaultPin").value="";
+      $("pinErr").textContent="";
+      show("second");
+      return;
+    }
+    $("loginErr").textContent="Incorrect username or password.";
+  }catch{$("loginErr").textContent="Sign-in failed. Try again."}
+};
+$("backCalc").onclick=()=>show("calculator");
+
+/* ---------- Admin dashboard ---------- */
+function refreshUserStatus(){
+  const c=getConfig(),u=c?.user;
+  $("userStatus").textContent=u?.enabled
+    ? "Secondary user: "+u.username+" — enabled"
+    : "No secondary user exists.";
+}
+$("saveUserBtn").onclick=async()=>{
+  const c=getConfig(),u=$("newUserName").value.trim(),p=$("newUserPass").value;
+  $("userErr").textContent="";
+  if(!u||u.length<3){$("userErr").textContent="Username must be at least 3 characters.";return}
+  if(p.length<8){$("userErr").textContent="User password must be at least 8 characters.";return}
+  if(u===c.admin.username){$("userErr").textContent="Choose a username different from the Admin.";return}
+  const salt=rand(16);
+  c.user={username:u,loginSalt:b64(salt),loginVerifier:await makeVerifier(u,p,salt),enabled:true};
+  saveConfig(c);
+  $("newUserName").value=$("newUserPass").value="";
+  refreshUserStatus();
+  $("userErr").textContent="User saved.";
+};
+$("removeUserBtn").onclick=()=>{
+  const c=getConfig();c.user=null;saveConfig(c);refreshUserStatus();
+};
+$("changeAdminPassBtn").onclick=async()=>{
+  const p=$("newAdminPassword").value;
+  $("adminPassErr").textContent="";
+  if(p.length<8){$("adminPassErr").textContent="Password must be at least 8 characters.";return}
+  const c=getConfig(),salt=rand(16);
+  c.admin.loginSalt=b64(salt);
+  c.admin.loginVerifier=await makeVerifier(c.admin.username,p,salt);
+  saveConfig(c);
+  $("newAdminPassword").value="";
+  $("adminPassErr").textContent="Admin password changed.";
+};
+$("adminHomeBtn").onclick=()=>show("admin");
+$("adminLogoutBtn").onclick=()=>lockToCalculator();
+$("adminVaultBtn").onclick=()=>{
+  sessionStorage.setItem("afterPin","admin");
+  $("vaultRole").textContent="Admin vault access";
+  $("vaultPin").value="";$("pinErr").textContent="";
+  show("second");
+};
+$("pinBack").onclick=()=>{
+  if(sessionStorage.getItem("role")==="user")show("login");
+  else if(sessionStorage.getItem("role")==="admin")show("admin");
+  else show("calculator");
+};
+
+/* ---------- IndexedDB ---------- */
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    const r=indexedDB.open(DB_NAME,1);
+    r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE))r.result.createObjectStore(STORE,{keyPath:"id"})};
+    r.onsuccess=()=>resolve(r.result);
+    r.onerror=()=>reject(r.error);
+  });
+}
+async function dbAll(){
+  const db=await openDB();
+  return new Promise((res,rej)=>{
+    const t=db.transaction(STORE,"readonly"),r=t.objectStore(STORE).getAll();
+    r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);
+  });
+}
+async function dbPut(v){
+  const db=await openDB();
+  return new Promise((res,rej)=>{
+    const t=db.transaction(STORE,"readwrite");t.objectStore(STORE).put(v);
+    t.oncomplete=res;t.onerror=()=>rej(t.error);
+  });
+}
+async function dbDelete(id){
+  const db=await openDB();
+  return new Promise((res,rej)=>{
+    const t=db.transaction(STORE,"readwrite");t.objectStore(STORE).delete(id);
+    t.oncomplete=res;t.onerror=()=>rej(t.error);
+  });
+}
+async function dbClear(){
+  const db=await openDB();
+  return new Promise((res,rej)=>{
+    const t=db.transaction(STORE,"readwrite");t.objectStore(STORE).clear();
+    t.oncomplete=res;t.onerror=()=>rej(t.error);
+  });
+}
+
+/* ---------- Vault ---------- */
+let currentKey=null,currentRole=null,currentCategory="Photos",viewerItems=[],viewerIndex=0,objectUrls=[];
+function clearGalleryUrls(){objectUrls.forEach(u=>URL.revokeObjectURL(u));objectUrls=[]}
+function categories(){return getConfig()?.categories||["Photos","Private","Favorites","Locked"]}
+function ensureCategory(name){
+  const c=getConfig();
+  if(!c.categories.includes(name)){c.categories.push(name);saveConfig(c)}
+}
+async function unlockVault(){
+  const pin=$("vaultPin").value;
+  $("pinErr").textContent="";
+  try{
+    const c=getConfig();
+    currentKey=await verifyVaultPin(pin,c);
+    currentRole=sessionStorage.getItem("role")||"user";
+    sessionStorage.setItem("role",currentRole);
+    $("vaultRole").textContent=(currentRole==="admin"?"Admin":"User")+" vault access";
+    $("vaultPin").value="";
+    await renderVault();
+    show("vault");
+  }catch(e){$("pinErr").textContent="Wrong vault PIN / passphrase."}
+}
+$("unlockBtn").onclick=unlockVault;
+$("vaultPin").addEventListener("keydown",e=>{if(e.key==="Enter")unlockVault()});
+$("lockBtn").onclick=()=>lockToCalculator();
+
+function renderTabs(){
+  const el=$("tabs");el.innerHTML="";
+  categories().forEach(cat=>{
+    const b=document.createElement("button");b.className="secondary tab";b.textContent=cat;
+    b.onclick=()=>{currentCategory=cat;renderVault()};
+    el.appendChild(b);
+  });
+  if(currentRole==="admin"){
+    const b=document.createElement("button");b.className="ghost tab";b.textContent="+ Category";
+    b.onclick=()=>{
+      const name=prompt("Category name");
+      if(name&&name.trim()){ensureCategory(name.trim());currentCategory=name.trim();renderVault()}
+    };
+    el.appendChild(b);
+  }
+}
+async function renderVault(){
+  if(!currentKey)return;
+  renderTabs();
+  const all=await dbAll();
+  const q=$("search").value.trim().toLowerCase();
+  const items=[];
+  clearGalleryUrls();
+  for(const rec of all){
+    if(rec.category!==currentCategory)continue;
+    if(q&&!rec.name.toLowerCase().includes(q))continue;
+    try{
+      const bytes=await decryptBytes(rec,currentKey);
+      const blob=new Blob([bytes],{type:rec.type});
+      const url=URL.createObjectURL(blob);objectUrls.push(url);
+      items.push({...rec,url});
+    }catch{}
+  }
+  viewerItems=items;
+  const g=$("gallery");g.innerHTML="";
+  if(!items.length){g.innerHTML='<div class="empty">No images in this category.</div>';return}
+  items.forEach((it,i)=>{
+    const tile=document.createElement("div");tile.className="tile";
+    const img=document.createElement("img");img.src=it.url;img.alt=it.name;img.loading="lazy";
+    img.onclick=()=>openViewer(i);
+    const meta=document.createElement("div");meta.className="meta";
+    meta.innerHTML='<div class="name"></div><div class="small"></div>';
+    meta.querySelector(".name").textContent=it.name;
+    meta.querySelector(".small").textContent=new Date(it.created).toLocaleString();
+    const acts=document.createElement("div");acts.className="tile-actions";
+    const del=document.createElement("button");del.className="danger";del.textContent="Delete";
+    del.onclick=async()=>{if(confirm("Delete this image?")){await dbDelete(it.id);await renderVault();await refreshStats()}};
+    acts.appendChild(del);tile.append(img,meta,acts);g.appendChild(tile);
+  });
+}
+$("search").addEventListener("input",()=>renderVault());
+
+async function addFiles(files){
+  if(!currentKey)return;
+  for(const file of files){
+    if(!file.type.startsWith("image/")||file.size>MAX_FILE)continue;
+    const bytes=new Uint8Array(await file.arrayBuffer());
+    const encrypted=await encryptBytes(bytes,currentKey);
+    await dbPut({
+      id:crypto.randomUUID(),name:file.name,type:file.type,size:file.size,
+      created:Date.now(),category:currentCategory,iv:encrypted.iv,data:encrypted.data
+    });
+  }
+  await renderVault();await refreshStats();
+}
+$("upload").addEventListener("change",e=>addFiles([...e.target.files]));
+$("drop").addEventListener("dragover",e=>{e.preventDefault();$("drop").classList.add("drag")});
+$("drop").addEventListener("dragleave",()=>$("drop").classList.remove("drag"));
+$("drop").addEventListener("drop",e=>{e.preventDefault();$("drop").classList.remove("drag");addFiles([...e.dataTransfer.files])});
+
+/* ---------- Viewer ---------- */
+function openViewer(i){
+  viewerIndex=i;
+  $("viewerImg").src=viewerItems[i]?.url||"";
+  $("viewer").classList.remove("hidden");
+}
+function moveViewer(delta){
+  if(!viewerItems.length)return;
+  viewerIndex=(viewerIndex+delta+viewerItems.length)%viewerItems.length;
+  $("viewerImg").src=viewerItems[viewerIndex].url;
+}
+$("viewerClose").onclick=()=>$("viewer").classList.add("hidden");
+$("viewerPrev").onclick=()=>moveViewer(-1);
+$("viewerNext").onclick=()=>moveViewer(1);
+document.addEventListener("keydown",e=>{
+  if($("viewer").classList.contains("hidden"))return;
+  if(e.key==="Escape")$("viewer").classList.add("hidden");
+  if(e.key==="ArrowLeft")moveViewer(-1);
+  if(e.key==="ArrowRight")moveViewer(1);
+});
+
+/* ---------- Backup / restore ---------- */
+async function makeBackup(){
+  const pin=prompt("Enter your vault PIN / passphrase to create an encrypted backup.");
+  if(pin===null)return;
+  try{
+    const c=getConfig(),key=await verifyVaultPin(pin,c),records=await dbAll();
+    const payload={format:"pocket-calculator-v3-backup",created:Date.now(),config:c,records};
+    const encrypted=await encryptText(JSON.stringify(payload),key);
+    const blob=new Blob([JSON.stringify({format:"pocket-calculator-v3-encrypted-backup",...encrypted})],{type:"application/json"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="pocket-calculator-vault-backup.json";a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  }catch{$("restoreErr").textContent="Backup failed: wrong vault PIN or invalid vault."}
+}
+$("backupBtn").onclick=makeBackup;
+$("adminBackupBtn").onclick=makeBackup;
+
+$("restoreBtn").onclick=async()=>{
+  const file=$("restoreFile").files[0];$("restoreErr").textContent="";
+  if(!file){$("restoreErr").textContent="Choose a backup file first.";return}
+  const pin=prompt("Enter the vault PIN used when this backup was created.");
+  if(pin===null)return;
+  try{
+    const wrapper=JSON.parse(await file.text());
+    if(wrapper.format!=="pocket-calculator-v3-encrypted-backup")throw new Error();
+    const c=getConfig(),key=await verifyVaultPin(pin,c);
+    const payload=JSON.parse(await decryptText(wrapper,key));
+    if(payload.format!=="pocket-calculator-v3-backup")throw new Error();
+    // Restore only if the backup's vault marker can also be verified with this key.
+    await decryptText(payload.config.vault.marker,key);
+    saveConfig(payload.config);
+    await dbClear();
+    for(const rec of payload.records)await dbPut(rec);
+    $("restoreErr").textContent="Backup restored. Reloading...";
+    setTimeout(()=>location.reload(),700);
+  }catch{$("restoreErr").textContent="Restore failed. Check the backup and vault PIN."}
+};
+
+/* ---------- Stats ---------- */
+async function refreshStats(){
+  const records=await dbAll();
+  $("statImages").textContent=records.length;
+  $("statCats").textContent=categories().length;
+  const bytes=records.reduce((n,r)=>n+(r.data?.length||0),0);
+  $("statSize").textContent=bytes>1024*1024?(bytes/1024/1024).toFixed(1)+" MB":bytes>1024?(bytes/1024).toFixed(1)+" KB":bytes+" B";
+}
+
+/* ---------- Misc ---------- */
+$("decoyBack").onclick=()=>show("calculator");
+
+// Always start at the ordinary calculator. Private routing happens only through
+// the deliberate hidden gesture. This avoids accidental setup/login screens.
+show("calculator");
+</script>
+</body>
+</html>
